@@ -41,7 +41,7 @@ class Venue(db.Model):
     website = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean(), default=True)
+    seeking_talent = db.Column(db.Boolean(), default = False)
     seeking_description = db.Column(db.String(250))
     shows = db.relationship('Show', backref='venue')
 
@@ -237,8 +237,27 @@ def create_venue_submission():
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+  success = True
+  venue = Venue.query.get(venue_id)
+
+  try:
+    db.session.delete(venue)
+    db.session.commit()
+    flash('Venue ' + venue.name + ' was successfully deleted!')
+
+  except:
+    db.session.rollback()
+    success = False
+    print(sys.exc_info())
+    flash('An error occurred. Venue ' + venue.name + ' could not be deleted.')
+
+  finally:
+    db.session.close()
+
+  if success:
+    return redirect(url_for('venues'))
+  else:
+    return redirect(url_for('delete_venue', venue_id = venue_id))
 
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
