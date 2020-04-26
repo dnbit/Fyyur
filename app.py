@@ -146,10 +146,10 @@ def show_venue(venue_id):
   # shows the venue page with the given venue_id
   data = {}
   shows = Show.query.filter_by(venue_id = venue_id).all()
-  if shows:
-    past_shows = []
-    upcoming_shows = []
+  past_shows = []
+  upcoming_shows = []
 
+  if shows:
     for show in shows:
       artist = show.artist
       start_time = show.start_time
@@ -165,13 +165,6 @@ def show_venue(venue_id):
       else:
         upcoming_shows.append(details)
 
-    data.update({
-      "past_shows": past_shows,
-      "upcoming_shows": upcoming_shows,
-      "past_shows_count": len(past_shows),
-      "upcoming_shows_count": len(upcoming_shows),
-    })
-  
     # Add artist to data as dictionary
     venue = shows[0].venue
     data.update(vars(venue))
@@ -180,6 +173,13 @@ def show_venue(venue_id):
     # Add artist to data as dictionary
     venue = Venue.query.get(venue_id)
     data.update(vars(venue))
+
+  data.update({
+    "past_shows": past_shows,
+    "upcoming_shows": upcoming_shows,
+    "past_shows_count": len(past_shows),
+    "upcoming_shows_count": len(upcoming_shows),
+  })  
   
   return render_template('pages/show_venue.html', venue=data)
 
@@ -260,36 +260,43 @@ def search_artists():
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
+  data = {}
   shows = Show.query.filter_by(artist_id = artist_id).all()
-  artist = shows[0].artist
   
   past_shows = []
   upcoming_shows = []
 
-  for show in shows:
-    venue = show.venue
-    start_time = show.start_time
-    details = {
-      "venue_id": show.venue_id,
-      "venue_name": venue.name,
-      "venue_image_link": venue.image_link,
-      "start_time": str(start_time)
-    }
+  if shows:
+    for show in shows:
+      venue = show.venue
+      start_time = show.start_time
+      details = {
+        "venue_id": show.venue_id,
+        "venue_name": venue.name,
+        "venue_image_link": venue.image_link,
+        "start_time": str(start_time)
+      }
 
-    if start_time <= datetime.now():
-      past_shows.append(details)
-    else:
-      upcoming_shows.append(details)
-
-  data = {
-    "past_shows": past_shows,
-    "upcoming_shows": upcoming_shows,
-    "past_shows_count": len(past_shows),
-    "upcoming_shows_count": len(upcoming_shows),
-  }
+      if start_time <= datetime.now():
+        past_shows.append(details)
+      else:
+        upcoming_shows.append(details)
+    
+    # Add artist to data as dictionary
+    artist = shows[0].artist
+    data.update(vars(artist))
   
-  # Add artist to data as dictionary
-  data.update(vars(artist))
+  else: 
+    # Add artist to data as dictionary
+    artist = Artist.query.get(artist_id)
+    data.update(vars(artist))
+
+  data.update({
+      "past_shows": past_shows,
+      "upcoming_shows": upcoming_shows,
+      "past_shows_count": len(past_shows),
+      "upcoming_shows_count": len(upcoming_shows),
+    })
 
   return render_template('pages/show_artist.html', artist=data)
   
